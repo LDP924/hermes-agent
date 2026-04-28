@@ -299,7 +299,7 @@ class QQAdapter(BasePlatformAdapter):
         logger.info("[%s] Disconnected", self._log_tag)
 
     async def _cleanup(self) -> None:
-        """Close WebSocket, HTTP session, and client."""
+        """Close WebSocket, HTTP session, 和 client."""
         if self._ws and not self._ws.closed:
             await self._ws.close()
         self._ws = None
@@ -442,7 +442,7 @@ class QQAdapter(BasePlatformAdapter):
                 if duration < QUICK_DISCONNECT_THRESHOLD and connect_time > 0:
                     quick_disconnect_count += 1
                     logger.info(
-                        "[%s] Quick disconnect (%.1fs), count: %d",
+                        "[%s] Quick disconnect (%.1fs), count: %d"，
                         self._log_tag,
                         duration,
                         quick_disconnect_count,
@@ -1007,7 +1007,7 @@ class QQAdapter(BasePlatformAdapter):
                 chat_id=channel_id,
                 user_id=str(author.get("id", "")),
                 user_name=nick or None,
-                chat_type="group",
+                chat_type="group"，
             ),
             text=text,
             message_type=self._detect_message_type(image_urls, image_media_types),
@@ -2092,25 +2092,41 @@ class QQAdapter(BasePlatformAdapter):
         )
 
     async def send_document(
-            self,
-            chat_id: str,
-            file_path: str,
-            caption: Optional[str] = None,
-            file_name: Optional[str] = None,
-            reply_to: Optional[str] = None,
-            **kwargs,
-    ) -> SendResult:
-        """Send a file/document natively."""
-        del kwargs
-        return await self._send_media(
-            chat_id,
-            file_path,
-            MEDIA_TYPE_FILE,
-            "file",
-            caption,
-            reply_to,
-            file_name=file_name,
+    self,
+    chat_id: str,
+    file_path: str,
+    caption: Optional[str] = None,
+    file_name: Optional[str] = None,
+    reply_to: Optional[str] = None,
+    **kwargs,
+) -> SendResult:
+    metadata = kwargs.get("metadata") or {}
+    source_tool = (
+        kwargs.get("source_tool")
+        or kwargs.get("tool_name")
+        or metadata.get("source_tool")
+        or metadata.get("tool_name")
+        or metadata.get("mcp_tool")
+        or ""
+    )
+
+    if source_tool == "mcp_imagegen_generate_image":
+        return await self.send_image_file(
+            chat_id=chat_id,
+            image_path=file_path,
+            caption=caption,
+            reply_to=reply_to,
         )
+
+    return await self._send_media(
+        chat_id,
+        file_path,
+        MEDIA_TYPE_FILE,
+        "file",
+        caption,
+        reply_to,
+        file_name=file_name,
+    )
 
     async def _send_media(
             self,
