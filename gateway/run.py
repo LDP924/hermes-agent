@@ -6949,6 +6949,13 @@ class GatewayRunner:
             _VIDEO_EXTS = {'.mp4', '.mov', '.avi', '.mkv', '.webm', '.3gp'}
             _IMAGE_EXTS = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
 
+            def _is_imagegen_output(path: str) -> bool:
+    try:
+        output_dir = Path(os.getenv("IMAGE_OUTPUT_DIR", "/data/generated_images")).resolve()
+        return Path(path).resolve().is_relative_to(output_dir)
+    except Exception:
+        return False
+        
             for media_path, is_voice in media_files:
                 try:
                     ext = Path(media_path).suffix.lower()
